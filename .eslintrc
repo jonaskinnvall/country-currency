@@ -1,0 +1,54 @@
+
+{
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "plugins": ["react"],
+    "parserOptions": {
+        "sourceType": "module",
+        "allowImportExportEverywhere": true,
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true,
+            "jsx": true
+        }
+    },
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true,
+        "commonjs": true,
+        "jest": true
+    },
+    "rules": {
+        "no-console": 0,
+        "no-mixed-spaces-and-tabs": 0,
+        "react/prop-types": [2],
+        "linebreak-style": ["error", "unix"],
+        "no-unused-vars": [
+            "warn",
+            { "vars": "all", "args": "none", "ignoreRestSiblings": false }
+        ],
+        "new-cap": 1,
+        "camelcase": 1,
+        "no-invalid-this": 1,
+        "object-curly-spacing": 0,
+        "quotes": ["warn", "single"],
+        "semi": 1,
+        "no-unused-expressions": 1,
+        "valid-typeof": 1
+    },
+    "settings": {
+        "react": {
+            "createClass": "createReactClass",
+            "pragma": "React",
+            "version": "detect"
+        },
+        "propWrapperFunctions": [
+            "forbidExtraProps",
+            { "property": "freeze", "object": "Object" },
+            { "property": "myFavoriteWrapper" }
+        ],
+        "linkComponents": [
+            "Hyperlink",
+            { "name": "Link", "linkAttribute": "to" }
+        ]
+    }
+}
