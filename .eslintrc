@@ -5,6 +5,7 @@
     "parserOptions": {
         "sourceType": "module",
         "allowImportExportEverywhere": true,
+        "ecmaVersion": 8,
         "ecmaFeatures": {
             "experimentalObjectRestSpread": true,
             "jsx": true

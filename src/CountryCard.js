@@ -29,60 +29,50 @@ const CountryCard = ({ countryInfo }) => {
 
     return (
         <>
-            {!countryInfo ? (
+            <div className="countryCard">
+                <img className="flag" src={countryInfo.flag} alt="" />
+                <div className="columnWidth">
+                    <h1>{countryInfo.name}</h1>
+                    <h3>({countryInfo.nativeName})</h3>
+                    <h3> Part of {countryInfo.region}</h3>
+                </div>
+                <div className="categories columnWidth">
+                    <h3>Capital: {countryInfo.capital}</h3>
+                    <h3>
+                        Population: {countryInfo.population.toLocaleString()}
+                    </h3>
+                    <h3>
+                        Currency: {countryInfo.currencies[0].name} (
+                        {countryInfo.currencies[0].code})
+                    </h3>
+                </div>
                 <div>
-                    <h2>
-                        Fetching error... No country with matching name or
-                        country code. Please try again.
-                    </h2>
-                </div>
-            ) : (
-                <div className="countryCard">
-                    <img className="flag" src={countryInfo.flag} alt="" />
-                    <div className="columnWidth">
-                        <h1>{countryInfo.name}</h1>
-                        <h3>({countryInfo.nativeName})</h3>
-                        <h3> Part of {countryInfo.region}</h3>
-                    </div>
-                    <div className="categories columnWidth">
-                        <h3>Capital: {countryInfo.capital}</h3>
-                        <h3>
-                            Population:{' '}
-                            {countryInfo.population.toLocaleString()}
-                        </h3>
-                        <h3>
-                            Currency: {countryInfo.currencies[0].name} (
-                            {countryInfo.currencies[0].code})
-                        </h3>
-                    </div>
-                    <div>
-                        <p>
-                            Input value in SEK to get current exchange rate for{' '}
-                            {countryInfo.currencies[0].code}:
-                        </p>
-                        <div className="currencyInput">
-                            <div className="columnWidth">
-                                <InputField
-                                    inputType={'SEK'}
-                                    inputValue={AmountSEK}
-                                    setInput={setAmountSEK}
-                                />
-                            </div>
-                            <div>
-                                <p>=</p>
-                            </div>
-                            {Currency && AmountSEK !== '' ? (
-                                <p>
-                                    {Currency.result}{' '}
-                                    {countryInfo.currencies[0].code}
-                                </p>
-                            ) : (
-                                <p>{countryInfo.currencies[0].code}</p>
-                            )}
+                    <p>
+                        Input value in SEK to get current exchange rate for{' '}
+                        {countryInfo.currencies[0].code}:
+                    </p>
+                    <div className="currencyInput">
+                        <div className="columnWidth">
+                            <InputField
+                                inputType={'SEK'}
+                                inputValue={AmountSEK}
+                                setInput={setAmountSEK}
+                            />
                         </div>
+                        <div>
+                            <p>=</p>
+                        </div>
+                        {Currency && AmountSEK !== '' ? (
+                            <p>
+                                {Currency.result}{' '}
+                                {countryInfo.currencies[0].code}
+                            </p>
+                        ) : (
+                            <p>{countryInfo.currencies[0].code}</p>
+                        )}
                     </div>
                 </div>
-            )}
+            </div>
         </>
     );
 };
