@@ -20,7 +20,6 @@ export default function App() {
                         '?fullText=true'
                 );
                 const newCountry = await response.json();
-                console.log(Object.prototype.toString.call(newCountry));
                 if (
                     Object.prototype.toString.call(newCountry) ===
                     '[object Array]'

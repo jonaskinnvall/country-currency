@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import './styles.css';
 
-const InputField = ({ inputType, setInput }) => {
+const InputField = ({ inputType, inputValue, setInput }) => {
     let waitInput = null;
 
     // Handle change in input fields with a timeout
@@ -22,7 +22,11 @@ const InputField = ({ inputType, setInput }) => {
                 className="Input"
                 type="text"
                 placeholder={
-                    inputType === 'Search' ? 'Search countries..' : 'SEK'
+                    inputType === 'Search'
+                        ? 'Search countries..'
+                        : inputValue
+                        ? inputValue + ' SEK'
+                        : ' SEK'
                 }
                 onChange={(e) => {
                     handleChange(e);
@@ -36,5 +40,6 @@ export default InputField;
 
 InputField.propTypes = {
     inputType: PropTypes.string,
+    inputValue: PropTypes.string,
     setInput: PropTypes.func,
 };
