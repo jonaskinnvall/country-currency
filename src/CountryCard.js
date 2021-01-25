@@ -18,7 +18,7 @@ const CountryCard = ({ countryInfo }) => {
             country.current = countryInfo;
             currInLS.current = false;
         }
-        setAmountSEK();
+        setAmountSEK('');
         setCurrency();
     }, [countryInfo]);
 
@@ -45,6 +45,9 @@ const CountryCard = ({ countryInfo }) => {
             console.log('Call Fetch');
             fetchRate(AmountSEK, country.current.currencies[0].code);
         }
+        // Set currInLS to false after first render so that
+        // fetches for different SEK rates can work
+        currInLS.current = false;
     }, [AmountSEK]);
 
     // After fetching currency, calculate the rate for 1 SEK and add to local storage
