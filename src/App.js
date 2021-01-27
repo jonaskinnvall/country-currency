@@ -13,7 +13,6 @@ export default function App() {
     useEffect(() => {
         const fetchCountry = async () => {
             try {
-                console.log('Fetch');
                 const response = await fetch(
                     'https://restcountries.eu/rest/v2/name/' +
                         Search +

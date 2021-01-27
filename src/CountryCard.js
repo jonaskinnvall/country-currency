@@ -9,17 +9,32 @@ const CountryCard = ({ countryInfo }) => {
     const country = useRef(countryInfo);
     const currInLS = useRef(false);
 
-    // Update useRef
     useEffect(() => {
-        console.log('Ref use');
-
+        // Update useRef and reset AmunotSEK and Currency
+        setAmountSEK();
+        setCurrency();
         if (country.current !== countryInfo) {
-            console.log('Change ref');
             country.current = countryInfo;
             currInLS.current = false;
         }
-        setAmountSEK('');
-        setCurrency();
+
+        // Get currency rate from local storage and set AmountSEK to 1
+        // to visualize the current rate for 1 SEK
+        if (
+            typeof window.localStorage.getItem(
+                country.current.currencies[0].code
+            ) !== 'undefined' &&
+            window.localStorage.getItem(country.current.currencies[0].code) !==
+                null
+        ) {
+            currInLS.current = true;
+            setAmountSEK('1');
+            setCurrency({
+                result: window.localStorage.getItem(
+                    country.current.currencies[0].code
+                ),
+            });
+        }
     }, [countryInfo]);
 
     // UseEffect to fetch exchange rate when user has
@@ -27,7 +42,6 @@ const CountryCard = ({ countryInfo }) => {
     useEffect(() => {
         const fetchRate = async (amount, targetCurr) => {
             try {
-                console.log('Fetch Curr');
                 const response = await fetch(
                     'https://api.exchangerate.host/convert?from=SEK&to=' +
                         targetCurr +
@@ -42,7 +56,6 @@ const CountryCard = ({ countryInfo }) => {
         };
 
         if (AmountSEK && country && !currInLS.current) {
-            console.log('Call Fetch');
             fetchRate(AmountSEK, country.current.currencies[0].code);
         }
         // Set currInLS to false after first render so that
@@ -69,37 +82,13 @@ const CountryCard = ({ countryInfo }) => {
             window.localStorage.getItem(country.current.currencies[0].code) ===
                 null
         ) {
-            console.log('Get rate and set LS');
             getRate();
-
             window.localStorage.setItem(
                 country.current.currencies[0].code,
                 rate
             );
         }
     }, [Currency]);
-
-    // Get currency rate from local storage and set AmountSEK to 1
-    // to visualize the current rate for 1 SEK
-    useEffect(() => {
-        if (
-            typeof window.localStorage.getItem(
-                country.current.currencies[0].code
-            ) !== 'undefined' &&
-            window.localStorage.getItem(country.current.currencies[0].code) !==
-                null
-        ) {
-            console.log('Set amount 1 and get curr');
-
-            currInLS.current = true;
-            setAmountSEK('1');
-            setCurrency({
-                result: window.localStorage.getItem(
-                    country.current.currencies[0].code
-                ),
-            });
-        }
-    }, [countryInfo]);
 
     return (
         <>
@@ -131,6 +120,7 @@ const CountryCard = ({ countryInfo }) => {
                                 inputType={'SEK'}
                                 inputValue={AmountSEK}
                                 setInput={setAmountSEK}
+                                country={countryInfo}
                             />
                         </div>
                         <div>
