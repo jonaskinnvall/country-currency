@@ -6,6 +6,7 @@ import './styles.css';
 const InputField = ({ inputType, inputValue, setInput, country }) => {
     let waitInput = null;
     const countryInfo = useRef(country);
+    const inputText = useRef();
 
     // Clear currency InputField on re-render
     if (
@@ -19,12 +20,21 @@ const InputField = ({ inputType, inputValue, setInput, country }) => {
     // Handle change in input fields with a timeout
     // to wait for user to finish typing before setting value
     const handleChange = (e) => {
-        e.preventDefault();
-        let inputText = e.target.value;
+        inputText.current = e.target.value;
+
         if (waitInput) clearTimeout(waitInput);
+
         waitInput = setTimeout(() => {
-            setInput(inputText);
-        }, 500);
+            setInput(inputText.current);
+        }, 2000);
+    };
+
+    const handleSubmit = (e) => {
+        if (e.charCode === 13) {
+            clearTimeout(waitInput);
+
+            setInput(inputText.current);
+        }
     };
 
     return (
@@ -39,9 +49,8 @@ const InputField = ({ inputType, inputValue, setInput, country }) => {
                         ? inputValue + ' SEK'
                         : ' SEK'
                 }
-                onChange={(e) => {
-                    handleChange(e);
-                }}
+                onChange={handleChange}
+                onKeyPress={handleSubmit}
             ></input>
         </>
     );
