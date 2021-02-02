@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import InputField from './InputField';
+import CurrencyGraph from './CurrencyGraph';
 import './styles.css';
 
 const CountryCard = ({ countryInfo }) => {
@@ -134,6 +135,11 @@ const CountryCard = ({ countryInfo }) => {
                         ) : (
                             <p>{countryInfo.currencies[0].code}</p>
                         )}
+                    </div>
+                    <div>
+                        <CurrencyGraph
+                            currency={countryInfo.currencies[0].code}
+                        />
                     </div>
                 </div>
             </div>
