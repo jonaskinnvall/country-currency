@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 const CurrencyGraph = ({ currency }) => {
     const [RateHistory, setRateHistory] = useState();
     const [Rates, setRates] = useState([]);
+    const currencyKey = currency + 'key';
 
     useEffect(() => {
         const fetchRateHistory = async () => {
@@ -24,7 +25,9 @@ const CurrencyGraph = ({ currency }) => {
     }, [currency]);
 
     useEffect(() => {
+        console.log('Set');
         if (RateHistory) {
+            console.log('Set Rates');
             for (const date in RateHistory.rates) {
                 if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
                     const dateNRate = {
@@ -35,7 +38,28 @@ const CurrencyGraph = ({ currency }) => {
                 }
             }
         }
-    }, [RateHistory]);
+    }, [RateHistory, currency]);
+
+    useEffect(() => {
+        console.log('LS');
+        if (RateHistory) {
+            console.log('Rates.length', Rates.length);
+            console.log(
+                'RateHistory.rates.length',
+                Object.keys(RateHistory.rates).length
+            );
+            if (
+                (typeof window.localStorage.getItem(currencyKey) ===
+                    'undefined' ||
+                    window.localStorage.getItem(currencyKey) === null) &&
+                Rates.length === Object.keys(RateHistory.rates).length
+            ) {
+                console.log('Set historical LS');
+                console.log('Rates', Rates);
+                window.localStorage.setItem(currencyKey, JSON.stringify(Rates));
+            }
+        }
+    }, [Rates, currencyKey, RateHistory]);
 
     return (
         <>
