@@ -75,24 +75,31 @@ const CurrencyGraph = ({ currency }) => {
                                 y2="1"
                             >
                                 <stop
-                                    offset="5%"
-                                    stopColor="#faa5aa"
-                                    stopOpacity={0.8}
+                                    offset="75%"
+                                    stopColor="#f4f0e4"
+                                    stopOpacity={1}
                                 />
                                 <stop
                                     offset="95%"
-                                    stopColor="#faa5aa"
-                                    stopOpacity={0}
+                                    stopColor="#f4f0e4"
+                                    stopOpacity={0.8}
                                 />
                             </linearGradient>
                         </defs>
                         <XAxis dataKey="date" />
                         <YAxis domain={['dataMin', 'dataMax']} />
-                        <Tooltip />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: 'rgba(9, 158, 128, 0.8)',
+                                borderColor: '"#f4f0e4"',
+                                borderRadius: '5px',
+                            }}
+                            itemStyle={{ color: '#f4f0e4' }}
+                        />
                         <Area
                             type="monotone"
                             dataKey="rate"
-                            stroke="#091668"
+                            stroke="#f4f0e4"
                             fillOpacity={1}
                             fill="url(#colorRate)"
                         />
