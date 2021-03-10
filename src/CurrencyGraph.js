@@ -1,17 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 import PropTypes from 'prop-types';
 
 const CurrencyGraph = ({ currency }) => {
     const [RateHistory, setRateHistory] = useState();
     const [Rates, setRates] = useState([]);
-    const currencyKey = currency + 'key';
+    const currencyRef = useRef(currency);
+    const currencyKey = useRef(currency + 'key');
+
+    useEffect(() => {
+        console.log('Set refs');
+        if (currencyRef.current !== currency) {
+            currencyRef.current = currency;
+            currencyKey.current = currency + 'key';
+        }
+    }, [currency]);
 
     useEffect(() => {
         const fetchRateHistory = async () => {
+            console.log('Fetch Rates');
             try {
                 const response = await fetch(
-                    'https://api.exchangerate.host/timeseries?start_date=2020-01-01&end_date=2020-04-01&base=SEK&symbols=' +
+                    'https://api.exchangerate.host/timeseries?start_date=2020-04-01&end_date=2020-06-01&base=SEK&symbols=' +
                         currency
                 );
                 const rateData = await response.json();
@@ -20,6 +30,7 @@ const CurrencyGraph = ({ currency }) => {
                 console.log('Fetching error', err);
             }
         };
+
         setRates([]);
         fetchRateHistory();
     }, [currency]);
@@ -28,17 +39,19 @@ const CurrencyGraph = ({ currency }) => {
         console.log('Set');
         if (RateHistory) {
             console.log('Set Rates');
+            console.log('RateHistory.rates', RateHistory.rates);
+            console.log('currencyRef', currencyRef);
             for (const date in RateHistory.rates) {
                 if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
                     const dateNRate = {
                         date: date,
-                        rate: RateHistory.rates[date][currency],
+                        rate: RateHistory.rates[date][currencyRef.current],
                     };
                     setRates((Rates) => [...Rates, dateNRate]);
                 }
             }
         }
-    }, [RateHistory, currency]);
+    }, [RateHistory]);
 
     useEffect(() => {
         console.log('LS');
@@ -49,17 +62,23 @@ const CurrencyGraph = ({ currency }) => {
                 Object.keys(RateHistory.rates).length
             );
             if (
-                (typeof window.localStorage.getItem(currencyKey) ===
+                (typeof window.localStorage.getItem(currencyKey.current) ===
                     'undefined' ||
-                    window.localStorage.getItem(currencyKey) === null) &&
+                    window.localStorage.getItem(currencyKey.current) ===
+                        null) &&
                 Rates.length === Object.keys(RateHistory.rates).length
             ) {
                 console.log('Set historical LS');
                 console.log('Rates', Rates);
-                window.localStorage.setItem(currencyKey, JSON.stringify(Rates));
+                window.localStorage.setItem(
+                    currencyKey.current,
+                    JSON.stringify(Rates)
+                );
             }
         }
-    }, [Rates, currencyKey, RateHistory]);
+    }, [Rates, RateHistory]);
+
+    console.log('Rates', Rates);
 
     return (
         <>
