@@ -4,6 +4,8 @@ import './styles.css';
 import CountryCard from './CountryCard';
 import InputField from './InputField';
 
+import { setLS, getLS } from './useLS';
+
 export default function App() {
     const [Countries, setCountries] = useState();
     const [Search, setSearch] = useState();
@@ -28,35 +30,23 @@ export default function App() {
                     setCountries();
                 }
             } catch (err) {
-                console.log('Fetching error', err);
+                console.error(err);
             }
         };
 
         if (Search) {
-            if (typeof Storage !== 'undefined') {
-                if (
-                    typeof window.localStorage.getItem(Search) !==
-                        'undefined' &&
-                    window.localStorage.getItem(Search) !== null
-                ) {
-                    setCountries(
-                        JSON.parse(window.localStorage.getItem(Search))
-                    );
-                } else {
-                    fetchCountry();
-                }
+            try {
+                getLS(Search, setCountries);
+            } catch (err) {
+                fetchCountry();
             }
         }
     }, [Search]);
 
     // UseEffect to add country to local storage on change
     useEffect(() => {
-        if (
-            (typeof window.localStorage.getItem(Search) === 'undefined' ||
-                window.localStorage.getItem(Search) === null) &&
-            typeof Countries !== 'undefined'
-        ) {
-            window.localStorage.setItem(Search, JSON.stringify(Countries));
+        if (typeof Countries !== 'undefined') {
+            setLS(Search, Countries);
         }
     }, [Countries]);
 

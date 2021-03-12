@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import InputField from './InputField';
 import CurrencyGraph from './CurrencyGraph';
+import { getLS, setLS } from './useLS';
 import './styles.css';
 
 const CountryCard = ({ countryInfo }) => {
     const [AmountSEK, setAmountSEK] = useState();
     const [Currency, setCurrency] = useState();
     const country = useRef(countryInfo);
-    const currInLS = useRef(false);
+    const currInLS = useRef(true);
 
     useEffect(() => {
         // Update useRef and reset AmunotSEK and Currency
@@ -16,25 +17,17 @@ const CountryCard = ({ countryInfo }) => {
         setCurrency();
         if (country.current !== countryInfo) {
             country.current = countryInfo;
-            currInLS.current = false;
         }
-
         // Get currency rate from local storage and set AmountSEK to 1
         // to visualize the current rate for 1 SEK
-        if (
-            typeof window.localStorage.getItem(
-                country.current.currencies[0].code
-            ) !== 'undefined' &&
-            window.localStorage.getItem(country.current.currencies[0].code) !==
-                null
-        ) {
+        try {
+            getLS(country.current.currencies[0].code, setCurrency);
             currInLS.current = true;
             setAmountSEK('1');
-            setCurrency({
-                result: window.localStorage.getItem(
-                    country.current.currencies[0].code
-                ),
-            });
+        } catch (err) {
+            console.error(err);
+            currInLS.current = false;
+            setAmountSEK();
         }
     }, [countryInfo]);
 
@@ -50,45 +43,34 @@ const CountryCard = ({ countryInfo }) => {
                         amount
                 );
                 const newCurrency = await response.json();
-                setCurrency(newCurrency);
+                setCurrency(newCurrency.result);
             } catch (err) {
-                console.log('Fetching error', err);
+                console.error(err);
             }
         };
 
-        if (AmountSEK && country && !currInLS.current) {
+        if (AmountSEK && country.current && !currInLS.current) {
             fetchRate(AmountSEK, country.current.currencies[0].code);
         }
         // Set currInLS to false after first render so that
         // fetches for different SEK rates can work
-        currInLS.current = false;
+        // currInLS.current = false;
     }, [AmountSEK]);
 
     // After fetching currency, calculate the rate for 1 SEK and add to local storage
     useEffect(() => {
         let rate = undefined;
         const getRate = () => {
-            rate = Currency.result / AmountSEK;
-            rate.toFixed(5);
+            rate = Currency / AmountSEK;
+            rate = rate.toFixed(4);
         };
 
         if (Currency === undefined || Currency === null) {
             return;
         }
 
-        if (
-            typeof window.localStorage.getItem(
-                country.current.currencies[0].code
-            ) === 'undefined' ||
-            window.localStorage.getItem(country.current.currencies[0].code) ===
-                null
-        ) {
-            getRate();
-            window.localStorage.setItem(
-                country.current.currencies[0].code,
-                rate
-            );
-        }
+        getRate();
+        setLS(country.current.currencies[0].code, rate);
     }, [Currency]);
 
     return (
@@ -96,19 +78,17 @@ const CountryCard = ({ countryInfo }) => {
             <div className="countryCard">
                 <img className="flag" src={countryInfo.flag} alt="" />
                 <div className="columnWidth">
-                    <h1>{countryInfo.name}</h1>
-                    <h3>({countryInfo.nativeName})</h3>
-                    <h3> Part of {countryInfo.region}</h3>
+                    <h2>{countryInfo.name}</h2>
+                    <p>({countryInfo.nativeName})</p>
+                    <p> Part of {countryInfo.region}</p>
                 </div>
                 <div className="categories columnWidth">
-                    <h3>Capital: {countryInfo.capital}</h3>
-                    <h3>
-                        Population: {countryInfo.population.toLocaleString()}
-                    </h3>
-                    <h3>
+                    <p>Capital: {countryInfo.capital}</p>
+                    <p>Population: {countryInfo.population.toLocaleString()}</p>
+                    <p>
                         Currency: {countryInfo.currencies[0].name} (
                         {countryInfo.currencies[0].code})
-                    </h3>
+                    </p>
                 </div>
                 <div>
                     <p>
@@ -129,8 +109,7 @@ const CountryCard = ({ countryInfo }) => {
                         </div>
                         {Currency && AmountSEK !== '' ? (
                             <p>
-                                {Currency.result}{' '}
-                                {countryInfo.currencies[0].code}
+                                {Currency} {countryInfo.currencies[0].code}
                             </p>
                         ) : (
                             <p>{countryInfo.currencies[0].code}</p>

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 import PropTypes from 'prop-types';
 
+import { getLS, setLS } from './useLS';
+
 const CurrencyGraph = ({ currency }) => {
     const [RateHistory, setRateHistory] = useState();
     const [Rates, setRates] = useState([]);
@@ -9,16 +11,15 @@ const CurrencyGraph = ({ currency }) => {
     const currencyKey = useRef(currency + 'key');
 
     useEffect(() => {
-        console.log('Set refs');
         if (currencyRef.current !== currency) {
             currencyRef.current = currency;
             currencyKey.current = currency + 'key';
+            setRates([]);
         }
     }, [currency]);
 
     useEffect(() => {
         const fetchRateHistory = async () => {
-            console.log('Fetch Rates');
             try {
                 const response = await fetch(
                     'https://api.exchangerate.host/timeseries?start_date=2020-04-01&end_date=2020-06-01&base=SEK&symbols=' +
@@ -31,16 +32,11 @@ const CurrencyGraph = ({ currency }) => {
             }
         };
 
-        setRates([]);
         fetchRateHistory();
     }, [currency]);
 
     useEffect(() => {
-        console.log('Set');
         if (RateHistory) {
-            console.log('Set Rates');
-            console.log('RateHistory.rates', RateHistory.rates);
-            console.log('currencyRef', currencyRef);
             for (const date in RateHistory.rates) {
                 if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
                     const dateNRate = {
@@ -54,31 +50,13 @@ const CurrencyGraph = ({ currency }) => {
     }, [RateHistory]);
 
     useEffect(() => {
-        console.log('LS');
-        if (RateHistory) {
-            console.log('Rates.length', Rates.length);
-            console.log(
-                'RateHistory.rates.length',
-                Object.keys(RateHistory.rates).length
-            );
-            if (
-                (typeof window.localStorage.getItem(currencyKey.current) ===
-                    'undefined' ||
-                    window.localStorage.getItem(currencyKey.current) ===
-                        null) &&
-                Rates.length === Object.keys(RateHistory.rates).length
-            ) {
-                console.log('Set historical LS');
-                console.log('Rates', Rates);
-                window.localStorage.setItem(
-                    currencyKey.current,
-                    JSON.stringify(Rates)
-                );
-            }
+        if (
+            RateHistory &&
+            Rates.length === Object.keys(RateHistory.rates).length
+        ) {
+            setLS(currencyKey.current, Rates);
         }
     }, [Rates, RateHistory]);
-
-    console.log('Rates', Rates);
 
     return (
         <>
