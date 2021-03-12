@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+
 import PropTypes from 'prop-types';
+import { DateTime } from 'luxon';
+import {
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    Tooltip,
+} from 'recharts';
 
 import { getLS, setLS } from './useLS';
 
@@ -9,6 +18,7 @@ const CurrencyGraph = ({ currency }) => {
     const [Rates, setRates] = useState([]);
     const currencyRef = useRef(currency);
     const currencyKey = useRef(currency + 'key');
+    const today = useRef(DateTime.now().toISODate());
 
     useEffect(() => {
         if (currencyRef.current !== currency) {
@@ -20,10 +30,10 @@ const CurrencyGraph = ({ currency }) => {
 
     useEffect(() => {
         const fetchRateHistory = async () => {
+            console.log('fetch rates');
             try {
                 const response = await fetch(
-                    'https://api.exchangerate.host/timeseries?start_date=2020-04-01&end_date=2020-06-01&base=SEK&symbols=' +
-                        currency
+                    `https://api.exchangerate.host/timeseries?start_date=2021-03-01&end_date=${today.current}&base=SEK&symbols=${currency}`
                 );
                 const rateData = await response.json();
                 setRateHistory(rateData);
@@ -31,12 +41,17 @@ const CurrencyGraph = ({ currency }) => {
                 console.log('Fetching error', err);
             }
         };
-
-        fetchRateHistory();
+        try {
+            getLS(currencyKey.current, setRates);
+        } catch (err) {
+            console.error(err);
+            fetchRateHistory();
+        }
     }, [currency]);
 
     useEffect(() => {
         if (RateHistory) {
+            console.log('set rates');
             for (const date in RateHistory.rates) {
                 if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
                     const dateNRate = {
@@ -58,11 +73,17 @@ const CurrencyGraph = ({ currency }) => {
         }
     }, [Rates, RateHistory]);
 
+    console.log('RateHistory', RateHistory);
+    console.log('Rates', Rates);
+
     return (
         <>
             {currency && Rates.length !== 0 ? (
-                <div>
-                    <AreaChart width={400} height={145} data={Rates}>
+                <ResponsiveContainer width="80%" height={145}>
+                    <AreaChart
+                        data={Rates}
+                        margin={{ top: 10, right: 42, left: 0, bottom: 17 }}
+                    >
                         <defs>
                             <linearGradient
                                 id="colorRate"
@@ -83,8 +104,23 @@ const CurrencyGraph = ({ currency }) => {
                                 />
                             </linearGradient>
                         </defs>
-                        <XAxis dataKey="date" />
-                        <YAxis domain={['dataMin', 'dataMax']} />
+                        <XAxis
+                            dataKey="date"
+                            tickMargin={15}
+                            interval={'preserveStart'}
+                        />
+                        <YAxis
+                            type="number"
+                            scale="linear"
+                            domain={[
+                                (dataMin) => dataMin - dataMin * 0.005,
+                                (dataMax) => dataMax + dataMax * 0.005,
+                            ]}
+                            interval={0}
+                            tickCount="4"
+                            tickMargin={5}
+                        />
+
                         <Tooltip
                             contentStyle={{
                                 backgroundColor: 'rgba(9, 158, 128, 0.8)',
@@ -101,7 +137,7 @@ const CurrencyGraph = ({ currency }) => {
                             fill="url(#colorRate)"
                         />
                     </AreaChart>
-                </div>
+                </ResponsiveContainer>
             ) : (
                 <div></div>
             )}

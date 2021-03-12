@@ -9,7 +9,7 @@ import { setLS, getLS } from './useLS';
 export default function App() {
     const [Countries, setCountries] = useState();
     const [Search, setSearch] = useState();
-    // window.localStorage.clear();
+    window.localStorage.clear();
 
     // UseEffect to fetch country when user types in search field
     useEffect(() => {

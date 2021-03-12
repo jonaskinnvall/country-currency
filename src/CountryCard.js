@@ -62,7 +62,7 @@ const CountryCard = ({ countryInfo }) => {
         let rate = undefined;
         const getRate = () => {
             rate = Currency / AmountSEK;
-            rate = rate.toFixed(4);
+            rate = rate.toFixed(3);
         };
 
         if (Currency === undefined || Currency === null) {
@@ -115,12 +115,8 @@ const CountryCard = ({ countryInfo }) => {
                             <p>{countryInfo.currencies[0].code}</p>
                         )}
                     </div>
-                    <div>
-                        <CurrencyGraph
-                            currency={countryInfo.currencies[0].code}
-                        />
-                    </div>
                 </div>
+                <CurrencyGraph currency={countryInfo.currencies[0].code} />
             </div>
         </>
     );

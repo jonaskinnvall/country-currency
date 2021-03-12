@@ -43,7 +43,6 @@ h1 {
     min-width: auto;
     max-width: auto;
     width: 50%;
-    height: 50%;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-around;
