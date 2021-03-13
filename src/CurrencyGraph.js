@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
 import PropTypes from 'prop-types';
-import { DateTime } from 'luxon';
 import {
     ResponsiveContainer,
     AreaChart,
@@ -13,27 +11,29 @@ import {
 
 import { getLS, setLS } from './useLS';
 
-const CurrencyGraph = ({ currency }) => {
+const CurrencyGraph = ({ currency, startDate, endDate }) => {
     const [RateHistory, setRateHistory] = useState();
     const [Rates, setRates] = useState([]);
     const currencyRef = useRef(currency);
-    const currencyKey = useRef(currency + 'key');
-    const today = useRef(DateTime.now().toISODate());
+    const currencyKey = useRef(currency + startDate.type);
 
     useEffect(() => {
         if (currencyRef.current !== currency) {
             currencyRef.current = currency;
-            currencyKey.current = currency + 'key';
+            currencyKey.current = currency + startDate.type;
             setRates([]);
         }
-    }, [currency]);
+        if (currencyKey.current !== startDate.type) {
+            currencyKey.current = currency + startDate.type;
+            setRates([]);
+        }
+    }, [currency, startDate]);
 
     useEffect(() => {
         const fetchRateHistory = async () => {
-            console.log('fetch rates');
             try {
                 const response = await fetch(
-                    `https://api.exchangerate.host/timeseries?start_date=2021-03-01&end_date=${today.current}&base=SEK&symbols=${currency}`
+                    `https://api.exchangerate.host/timeseries?start_date=${startDate.date}&end_date=${endDate}&base=SEK&symbols=${currency}`
                 );
                 const rateData = await response.json();
                 setRateHistory(rateData);
@@ -47,11 +47,10 @@ const CurrencyGraph = ({ currency }) => {
             console.error(err);
             fetchRateHistory();
         }
-    }, [currency]);
+    }, [currency, startDate, endDate]);
 
     useEffect(() => {
         if (RateHistory) {
-            console.log('set rates');
             for (const date in RateHistory.rates) {
                 if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
                     const dateNRate = {
@@ -72,9 +71,6 @@ const CurrencyGraph = ({ currency }) => {
             setLS(currencyKey.current, Rates);
         }
     }, [Rates, RateHistory]);
-
-    console.log('RateHistory', RateHistory);
-    console.log('Rates', Rates);
 
     return (
         <>
@@ -106,6 +102,7 @@ const CurrencyGraph = ({ currency }) => {
                         </defs>
                         <XAxis
                             dataKey="date"
+                            angle="15"
                             tickMargin={15}
                             interval={'preserveStart'}
                         />
@@ -117,7 +114,7 @@ const CurrencyGraph = ({ currency }) => {
                                 (dataMax) => dataMax + dataMax * 0.005,
                             ]}
                             interval={0}
-                            tickCount="4"
+                            tickCount="3"
                             tickMargin={5}
                         />
 
@@ -147,6 +144,8 @@ const CurrencyGraph = ({ currency }) => {
 
 CurrencyGraph.propTypes = {
     currency: PropTypes.string.isRequired,
+    startDate: PropTypes.object,
+    endDate: PropTypes.string,
 };
 
 export default CurrencyGraph;

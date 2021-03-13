@@ -20,7 +20,7 @@ body {
 }
 
 h1 {
-    color: rgb(244, 240, 228);
+    color: hsl(45, 42%, 93%);
 }
 
 .App > h2 {
@@ -51,6 +51,26 @@ h1 {
     -webkit-box-shadow: -2px 1px 33px -20px hsla(0, 0%, 0%, 0.17);
     -moz-box-shadow: -2px 1px 33px -20px hsla(0, 0%, 0%, 0.17);
     box-shadow: -2px 1px 33px -20px hsla(0, 0%, 0%, 0.169);
+}
+
+.tab {
+    border-radius: 5px;
+    border-color: hsl(45, 42%, 93%);
+    margin: 10px 0px;
+}
+.tab button {
+    background-color: hsl(45, 42%, 93%);
+    color: hsl(168, 89%, 33%);
+    border: none;
+    width: 100px;
+    height: 30px;
+}
+
+.tab button:hover {
+    background-color: hsl(168, 89%, 33%);
+    color: hsl(45, 42%, 93%);
+    border: solid;
+    border-color: hsl(45, 42%, 93%);
 }
 
 .columnWidth {

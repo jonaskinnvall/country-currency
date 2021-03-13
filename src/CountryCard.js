@@ -1,13 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { DateTime } from 'luxon';
+
 import InputField from './InputField';
 import CurrencyGraph from './CurrencyGraph';
 import { getLS, setLS } from './useLS';
 import './styles.css';
 
 const CountryCard = ({ countryInfo }) => {
+    const today = DateTime.now();
+    const initialDate = useRef(today.minus({ week: 1 }).toISODate());
+    const endDate = useRef(today.toISODate());
+
     const [AmountSEK, setAmountSEK] = useState();
     const [Currency, setCurrency] = useState();
+    const [startDate, setStart] = useState({
+        date: initialDate.current,
+        type: '1week',
+    });
     const country = useRef(countryInfo);
     const currInLS = useRef(true);
 
@@ -73,6 +83,25 @@ const CountryCard = ({ countryInfo }) => {
         setLS(country.current.currencies[0].code, rate);
     }, [Currency]);
 
+    const rateInterval = (interval, amount) => {
+        if (interval === 'month') {
+            setStart({
+                date: today.minus({ month: amount }).toISODate(),
+                type: amount + interval,
+            });
+        } else if (interval === 'week') {
+            setStart({
+                date: today.minus({ week: amount }).toISODate(),
+                type: amount + interval,
+            });
+        } else {
+            setStart({
+                date: today.minus({ year: amount }).toISODate(),
+                type: amount + interval,
+            });
+        }
+    };
+
     return (
         <>
             <div className="countryCard">
@@ -116,7 +145,22 @@ const CountryCard = ({ countryInfo }) => {
                         )}
                     </div>
                 </div>
-                <CurrencyGraph currency={countryInfo.currencies[0].code} />
+                <CurrencyGraph
+                    currency={countryInfo.currencies[0].code}
+                    startDate={startDate}
+                    endDate={endDate.current}
+                />
+                <div className="tab">
+                    <button onClick={() => rateInterval('week', 1)}>
+                        1 week
+                    </button>
+                    <button onClick={() => rateInterval('month', 1)}>
+                        1 month
+                    </button>
+                    <button onClick={() => rateInterval('month', 3)}>
+                        3 months
+                    </button>
+                </div>
             </div>
         </>
     );
