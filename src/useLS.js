@@ -19,6 +19,6 @@ export function getLS(key, setHook) {
     if (checkLS(key)) {
         setHook(JSON.parse(window.localStorage.getItem(key)));
     } else {
-        throw 'Not in LS!';
+        throw new Error('Not in LS');
     }
 }
