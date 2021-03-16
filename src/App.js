@@ -59,7 +59,7 @@ export default function App() {
     return (
         <>
             <div className="App Navbar">
-                <h1>Country Search</h1>
+                <h1>Country Currency</h1>
                 <InputField
                     inputType={'Search'}
                     inputValue={Search}
@@ -71,7 +71,7 @@ export default function App() {
                 <div className="App">
                     <h2>
                         Fetching error...{error} <br />
-                        Country name or country code not availabel. Please try
+                        Country name or country code not available. Please try
                         another.
                     </h2>
                 </div>
