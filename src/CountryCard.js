@@ -12,6 +12,7 @@ const CountryCard = ({ countryInfo }) => {
     const initialDate = useRef(today.minus({ week: 1 }).toISODate());
     const endDate = useRef(today.toISODate());
 
+    const [error, setError] = useState();
     const [AmountSEK, setAmountSEK] = useState();
     const [Currency, setCurrency] = useState();
     const [startDate, setStart] = useState({
@@ -23,10 +24,12 @@ const CountryCard = ({ countryInfo }) => {
 
     useEffect(() => {
         // Update useRef and reset AmunotSEK and Currency
-        setAmountSEK();
-        setCurrency();
+
         if (country.current !== countryInfo) {
             country.current = countryInfo;
+            setError();
+            setAmountSEK();
+            setCurrency();
         }
         // Get currency rate from local storage and set AmountSEK to 1
         // to visualize the current rate for 1 SEK
@@ -35,7 +38,6 @@ const CountryCard = ({ countryInfo }) => {
             currInLS.current = true;
             setAmountSEK('1');
         } catch (err) {
-            console.error(err);
             currInLS.current = false;
             setAmountSEK();
         }
@@ -52,10 +54,17 @@ const CountryCard = ({ countryInfo }) => {
                         '&amount=' +
                         amount
                 );
-                const newCurrency = await response.json();
-                setCurrency(newCurrency.result);
+                if (response.ok) {
+                    const newCurrency = await response.json();
+                    setCurrency(newCurrency.result);
+                } else {
+                    setCurrency();
+                    throw Error(
+                        `Request rejected with status ${response.status}`
+                    );
+                }
             } catch (err) {
-                console.error(err);
+                setError(err.message);
             }
         };
 
@@ -65,7 +74,7 @@ const CountryCard = ({ countryInfo }) => {
         // Set currInLS to false after first render so that
         // fetches for different SEK rates can work
         // currInLS.current = false;
-    }, [AmountSEK]);
+    }, [AmountSEK, setError]);
 
     // After fetching currency, calculate the rate for 1 SEK and add to local storage
     useEffect(() => {
@@ -81,7 +90,7 @@ const CountryCard = ({ countryInfo }) => {
 
         getRate();
         setLS(country.current.currencies[0].code, rate);
-    }, [Currency]);
+    }, [Currency, AmountSEK]);
 
     const rateInterval = (interval, amount) => {
         if (interval === 'month') {
@@ -136,7 +145,9 @@ const CountryCard = ({ countryInfo }) => {
                         <div>
                             <p>=</p>
                         </div>
-                        {Currency && AmountSEK !== '' ? (
+                        {error ? (
+                            <p> {error} Could not fetch currency rate</p>
+                        ) : Currency && AmountSEK !== '' ? (
                             <p>
                                 {Currency} {countryInfo.currencies[0].code}
                             </p>

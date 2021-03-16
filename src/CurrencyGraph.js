@@ -14,6 +14,7 @@ import { getLS, setLS } from './useLS';
 const CurrencyGraph = ({ currency, startDate, endDate }) => {
     const [RateHistory, setRateHistory] = useState();
     const [Rates, setRates] = useState([]);
+    const [error, setError] = useState();
     const currencyRef = useRef(currency);
     const currencyKey = useRef(currency + startDate.type);
 
@@ -21,6 +22,7 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
         if (currencyRef.current !== currency) {
             currencyRef.current = currency;
             currencyKey.current = currency + startDate.type;
+            setError();
             setRates([]);
         }
         if (currencyKey.current !== startDate.type) {
@@ -35,16 +37,22 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
                 const response = await fetch(
                     `https://api.exchangerate.host/timeseries?start_date=${startDate.date}&end_date=${endDate}&base=SEK&symbols=${currency}`
                 );
-                const rateData = await response.json();
-                setRateHistory(rateData);
+                if (response.ok) {
+                    const rateData = await response.json();
+                    setRateHistory(rateData);
+                } else {
+                    setRateHistory();
+                    throw Error(
+                        `Request rejected with status ${response.status}`
+                    );
+                }
             } catch (err) {
-                console.log('Fetching error', err);
+                setError(err.message);
             }
         };
         try {
             getLS(currencyKey.current, setRates);
         } catch (err) {
-            console.error(err);
             fetchRateHistory();
         }
     }, [currency, startDate, endDate]);
@@ -74,7 +82,9 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
 
     return (
         <>
-            {currency && Rates.length !== 0 ? (
+            {error ? (
+                <p>{error} Could note fetch graph data. </p>
+            ) : currency && Rates.length !== 0 ? (
                 <ResponsiveContainer width="80%" height={145}>
                     <AreaChart
                         data={Rates}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import './styles.css';
 import CountryCard from './CountryCard';
@@ -9,6 +9,8 @@ import { setLS, getLS } from './useLS';
 export default function App() {
     const [Countries, setCountries] = useState();
     const [Search, setSearch] = useState();
+    const [error, setError] = useState();
+    const searchString = useRef('');
     // window.localStorage.clear();
 
     // UseEffect to fetch country when user types in search field
@@ -20,20 +22,24 @@ export default function App() {
                         Search +
                         '?fullText=true'
                 );
-                const newCountry = await response.json();
-                if (
-                    Object.prototype.toString.call(newCountry) ===
-                    '[object Array]'
-                ) {
-                    setCountries(newCountry);
+                if (response.ok) {
+                    const newCountry = await response.json();
+                    setCountries(newCountry[0]);
                 } else {
                     setCountries();
+                    throw Error(
+                        `Request rejected with status ${response.status}`
+                    );
                 }
             } catch (err) {
-                console.error(err);
+                setError(err.message);
             }
         };
 
+        if (searchString.current !== Search) {
+            searchString.current = Search;
+            setError();
+        }
         if (Search) {
             try {
                 getLS(Search, setCountries);
@@ -46,7 +52,7 @@ export default function App() {
     // UseEffect to add country to local storage on change
     useEffect(() => {
         if (typeof Countries !== 'undefined') {
-            setLS(Search, Countries);
+            setLS(searchString.current, Countries);
         }
     }, [Countries]);
 
@@ -61,11 +67,12 @@ export default function App() {
                 />
             </div>
 
-            {Search && !Countries ? (
+            {error ? (
                 <div className="App">
                     <h2>
-                        Fetching error... No country with matching name or
-                        country code. Please try again.
+                        Fetching error...{error} <br />
+                        Country name or country code not availabel. Please try
+                        another.
                     </h2>
                 </div>
             ) : !Countries ? (
@@ -74,7 +81,7 @@ export default function App() {
                 </div>
             ) : (
                 <div className="App">
-                    <CountryCard countryInfo={Countries[0]} />
+                    <CountryCard countryInfo={Countries} />
                 </div>
             )}
         </>
