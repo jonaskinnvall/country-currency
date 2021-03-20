@@ -4,11 +4,11 @@ import './styles.css';
 import CountryCard from './CountryCard';
 import InputField from './InputField';
 
-import { setLS, getLS } from './useLS';
+import { setLS, getLS } from './LS';
 
 export default function App() {
-    const [Countries, setCountries] = useState();
-    const [Search, setSearch] = useState();
+    const [country, setCountry] = useState();
+    const [search, setSearch] = useState();
     const [error, setError] = useState();
     const searchString = useRef('');
     // window.localStorage.clear();
@@ -19,14 +19,14 @@ export default function App() {
             try {
                 const response = await fetch(
                     'https://restcountries.eu/rest/v2/name/' +
-                        Search +
+                        search +
                         '?fullText=true'
                 );
                 if (response.ok) {
                     const newCountry = await response.json();
-                    setCountries(newCountry[0]);
+                    setCountry(newCountry[0]);
                 } else {
-                    setCountries();
+                    setCountry();
                     throw Error(
                         `Request rejected with status ${response.status}`
                     );
@@ -36,25 +36,25 @@ export default function App() {
             }
         };
 
-        if (searchString.current !== Search) {
-            searchString.current = Search;
+        if (searchString.current !== search) {
+            searchString.current = search;
             setError();
         }
-        if (Search) {
+        if (search) {
             try {
-                getLS(Search, setCountries);
+                getLS(search, setCountry);
             } catch (err) {
                 fetchCountry();
             }
         }
-    }, [Search]);
+    }, [search]);
 
     // UseEffect to add country to local storage on change
     useEffect(() => {
         if (typeof Countries !== 'undefined') {
-            setLS(searchString.current, Countries);
+            setLS(searchString.current, country);
         }
-    }, [Countries]);
+    }, [country]);
 
     return (
         <>
@@ -62,7 +62,7 @@ export default function App() {
                 <h1>Country Currency</h1>
                 <InputField
                     inputType={'Search'}
-                    inputValue={Search}
+                    inputValue={search}
                     setInput={setSearch}
                 />
             </div>
@@ -75,13 +75,13 @@ export default function App() {
                         another.
                     </h2>
                 </div>
-            ) : !Countries ? (
+            ) : !country ? (
                 <div className="App">
                     <h2>Search for a country to learn more about it!</h2>
                 </div>
             ) : (
                 <div className="App">
-                    <CountryCard countryInfo={Countries} />
+                    <CountryCard countryInfo={country} />
                 </div>
             )}
         </>

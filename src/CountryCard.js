@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 
 import InputField from './InputField';
 import CurrencyGraph from './CurrencyGraph';
-import { getLS, setLS } from './useLS';
+import { getLS, setLS } from './LS';
 import './styles.css';
 
 const CountryCard = ({ countryInfo }) => {
@@ -13,8 +13,8 @@ const CountryCard = ({ countryInfo }) => {
     const endDate = useRef(today.toISODate());
 
     const [error, setError] = useState();
-    const [AmountSEK, setAmountSEK] = useState();
-    const [Currency, setCurrency] = useState();
+    const [amountSEK, setAmountSEK] = useState();
+    const [currency, setCurrency] = useState();
     const [startDate, setStart] = useState({
         date: initialDate.current,
         type: '1week',
@@ -68,29 +68,29 @@ const CountryCard = ({ countryInfo }) => {
             }
         };
 
-        if (AmountSEK && country.current && !currInLS.current) {
-            fetchRate(AmountSEK, country.current.currencies[0].code);
+        if (amountSEK && country.current && !currInLS.current) {
+            fetchRate(amountSEK, country.current.currencies[0].code);
         }
         // Set currInLS to false after first render so that
         // fetches for different SEK rates can work
         // currInLS.current = false;
-    }, [AmountSEK, setError]);
+    }, [amountSEK, setError]);
 
     // After fetching currency, calculate the rate for 1 SEK and add to local storage
     useEffect(() => {
         let rate = undefined;
         const getRate = () => {
-            rate = Currency / AmountSEK;
+            rate = currency / amountSEK;
             rate = rate.toFixed(3);
         };
 
-        if (Currency === undefined || Currency === null) {
+        if (currency === undefined || currency === null) {
             return;
         }
 
         getRate();
         setLS(country.current.currencies[0].code, rate);
-    }, [Currency, AmountSEK]);
+    }, [currency, amountSEK]);
 
     const rateInterval = (interval, amount) => {
         if (interval === 'month') {
@@ -137,7 +137,7 @@ const CountryCard = ({ countryInfo }) => {
                         <div className="columnWidth">
                             <InputField
                                 inputType={'SEK'}
-                                inputValue={AmountSEK}
+                                inputValue={amountSEK}
                                 setInput={setAmountSEK}
                                 country={countryInfo}
                             />
@@ -147,9 +147,9 @@ const CountryCard = ({ countryInfo }) => {
                         </div>
                         {error ? (
                             <p> {error} Could not fetch currency rate</p>
-                        ) : Currency && AmountSEK !== '' ? (
+                        ) : currency && amountSEK !== '' ? (
                             <p>
-                                {Currency} {countryInfo.currencies[0].code}
+                                {currency} {countryInfo.currencies[0].code}
                             </p>
                         ) : (
                             <p>{countryInfo.currencies[0].code}</p>

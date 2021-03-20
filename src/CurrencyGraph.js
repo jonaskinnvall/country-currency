@@ -9,11 +9,11 @@ import {
     Tooltip,
 } from 'recharts';
 
-import { getLS, setLS } from './useLS';
+import { getLS, setLS } from './LS';
 
 const CurrencyGraph = ({ currency, startDate, endDate }) => {
-    const [RateHistory, setRateHistory] = useState();
-    const [Rates, setRates] = useState([]);
+    const [rateHistory, setRateHistory] = useState();
+    const [rates, setRates] = useState([]);
     const [error, setError] = useState();
     const currencyRef = useRef(currency);
     const currencyKey = useRef(currency + startDate.type);
@@ -58,36 +58,36 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
     }, [currency, startDate, endDate]);
 
     useEffect(() => {
-        if (RateHistory) {
-            for (const date in RateHistory.rates) {
-                if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
+        if (rateHistory) {
+            for (const date in rateHistory.rates) {
+                if (Object.hasOwnProperty.call(rateHistory.rates, date)) {
                     const dateNRate = {
                         date: date,
-                        rate: RateHistory.rates[date][currencyRef.current],
+                        rate: rateHistory.rates[date][currencyRef.current],
                     };
-                    setRates((Rates) => [...Rates, dateNRate]);
+                    setRates((prevRates) => [...prevRates, dateNRate]);
                 }
             }
         }
-    }, [RateHistory]);
+    }, [rateHistory]);
 
     useEffect(() => {
         if (
-            RateHistory &&
-            Rates.length === Object.keys(RateHistory.rates).length
+            rateHistory &&
+            rates.length === Object.keys(rateHistory.rates).length
         ) {
-            setLS(currencyKey.current, Rates);
+            setLS(currencyKey.current, rates);
         }
-    }, [Rates, RateHistory]);
+    }, [rates, rateHistory]);
 
     return (
         <>
             {error ? (
                 <p>{error} Could note fetch graph data. </p>
-            ) : currency && Rates.length !== 0 ? (
+            ) : currency && rates.length !== 0 ? (
                 <ResponsiveContainer width="80%" height={145}>
                     <AreaChart
-                        data={Rates}
+                        data={rates}
                         margin={{ top: 10, right: 42, left: 0, bottom: 17 }}
                     >
                         <defs>
