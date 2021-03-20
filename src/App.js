@@ -27,21 +27,15 @@ export default function App() {
     const [search, setSearch] = useState();
     const [error, setError] = useState();
     const today = DateTime.now();
-    // window.localStorage.clear();
 
-    window.localStorage.setItem('date', JSON.stringify('2021-02-11'));
+    // localStorage.setItem('date', JSON.stringify('2021-03-20'));
 
-    useEffect(() => {
-        if (today.toISODate() !== getLS('date')) {
-            window.localStorage.clear();
-            window.localStorage.setItem(
-                'date',
-                JSON.stringify(today.toISODate())
-            );
-        }
+    const cache = JSON.parse(localStorage.getItem('date'));
 
-        // setLS('date', today.toISODate());
-    }, [today]);
+    if (today.toISODate() !== cache) {
+        localStorage.clear();
+        localStorage.setItem('date', JSON.stringify(today.toISODate()));
+    }
 
     // UseEffect to fetch country when user types in search field
     useEffect(() => {
@@ -57,7 +51,6 @@ export default function App() {
         }
     }, [search]);
 
-    console.log('country', country);
     return (
         <>
             <div className="App Navbar">
