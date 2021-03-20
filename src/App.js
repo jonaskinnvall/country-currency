@@ -1,61 +1,47 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import './styles.css';
 import CountryCard from './CountryCard';
 import InputField from './InputField';
 
-import { setLS, getLS } from './LS';
+async function fetchCountry(query) {
+    const cache = localStorage.getItem(query);
+    if (cache) {
+        return JSON.parse(cache);
+    }
+
+    const response = await fetch(
+        'https://restcountries.eu/rest/v2/name/' + query + '?fullText=true'
+    );
+    if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem(query, JSON.stringify(data));
+        return data;
+    }
+    throw Error(`Request rejected with status ${response.status}`);
+}
 
 export default function App() {
     const [country, setCountry] = useState();
     const [search, setSearch] = useState();
     const [error, setError] = useState();
-    const searchString = useRef('');
     // window.localStorage.clear();
 
     // UseEffect to fetch country when user types in search field
     useEffect(() => {
-        const fetchCountry = async () => {
-            try {
-                const response = await fetch(
-                    'https://restcountries.eu/rest/v2/name/' +
-                        search +
-                        '?fullText=true'
-                );
-                if (response.ok) {
-                    const newCountry = await response.json();
-                    setCountry(newCountry[0]);
-                } else {
-                    setCountry();
-                    throw Error(
-                        `Request rejected with status ${response.status}`
-                    );
-                }
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-
-        if (searchString.current !== search) {
-            searchString.current = search;
-            setError();
-        }
         if (search) {
-            try {
-                getLS(search, setCountry);
-            } catch (err) {
-                fetchCountry();
-            }
+            setError(null);
+            fetchCountry(search).then(
+                (country) => setCountry(country[0]),
+                (error) => {
+                    console.log('error', error.message);
+                    setError(error.message);
+                }
+            );
         }
     }, [search]);
 
-    // UseEffect to add country to local storage on change
-    useEffect(() => {
-        if (typeof Countries !== 'undefined') {
-            setLS(searchString.current, country);
-        }
-    }, [country]);
-
+    console.log('country', country);
     return (
         <>
             <div className="App Navbar">
