@@ -1,4 +1,4 @@
-function checkLS(key) {
+export function checkLS(key) {
     if (
         typeof window.localStorage.getItem(key) === 'undefined' ||
         window.localStorage.getItem(key) === null
@@ -15,9 +15,15 @@ export function setLS(key, item) {
     }
 }
 
-export function getLS(key, setHook) {
+export function getLS(key, setHook = false) {
     if (checkLS(key)) {
-        setHook(JSON.parse(window.localStorage.getItem(key)));
+        if (setHook) {
+            console.log('with hook');
+            setHook(JSON.parse(window.localStorage.getItem(key)));
+        } else {
+            console.log('without hook');
+            return JSON.parse(window.localStorage.getItem(key));
+        }
     } else {
         throw new Error('Not in LS');
     }

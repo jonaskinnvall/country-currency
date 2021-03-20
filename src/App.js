@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { DateTime } from 'luxon';
 
 import './styles.css';
 import CountryCard from './CountryCard';
@@ -25,7 +26,22 @@ export default function App() {
     const [country, setCountry] = useState();
     const [search, setSearch] = useState();
     const [error, setError] = useState();
+    const today = DateTime.now();
     // window.localStorage.clear();
+
+    window.localStorage.setItem('date', JSON.stringify('2021-02-11'));
+
+    useEffect(() => {
+        if (today.toISODate() !== getLS('date')) {
+            window.localStorage.clear();
+            window.localStorage.setItem(
+                'date',
+                JSON.stringify(today.toISODate())
+            );
+        }
+
+        // setLS('date', today.toISODate());
+    }, [today]);
 
     // UseEffect to fetch country when user types in search field
     useEffect(() => {
@@ -67,7 +83,7 @@ export default function App() {
                 </div>
             ) : (
                 <div className="App">
-                    <CountryCard countryInfo={country} />
+                    <CountryCard countryInfo={country} today={today} />
                 </div>
             )}
         </>

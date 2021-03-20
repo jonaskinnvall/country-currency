@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { DateTime } from 'luxon';
 
 import InputField from './InputField';
 import CurrencyGraph from './CurrencyGraph';
 import { getLS, setLS } from './LS';
 import './styles.css';
 
-const CountryCard = ({ countryInfo }) => {
-    const today = DateTime.now();
+const CountryCard = ({ countryInfo, today }) => {
     const initialDate = useRef(today.minus({ week: 1 }).toISODate());
     const endDate = useRef(today.toISODate());
 
@@ -181,4 +179,5 @@ export default CountryCard;
 
 CountryCard.propTypes = {
     countryInfo: PropTypes.object,
+    today: PropTypes.object,
 };
