@@ -1,94 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import InputField from './InputField';
 import CurrencyGraph from './CurrencyGraph';
-import { getLS, setLS } from './LS';
+
 import './styles.css';
 
-const CountryCard = ({ countryInfo, today }) => {
-    const initialDate = useRef(today.minus({ week: 1 }).toISODate());
-    const endDate = useRef(today.toISODate());
+const getRate = (currency, amount) => {
+    const rate = currency / amount;
+    return rate.toFixed(3);
+};
 
-    const [error, setError] = useState();
-    const [amountSEK, setAmountSEK] = useState();
+const fetchRate = async (query, targetCurr) => {
+    const cache = localStorage.getItem(targetCurr);
+    if (cache && query === '1') {
+        return JSON.parse(cache);
+    }
+
+    const response = await fetch(
+        'https://api.exchangerate.host/convert?from=SEK&to=' +
+            targetCurr +
+            '&amount=' +
+            query
+    );
+    if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem(
+            targetCurr,
+            JSON.stringify(getRate(data.result, query))
+        );
+        return data.result.toFixed(3);
+    }
+
+    throw Error(`Request rejected with status ${response.status}`);
+};
+
+const CountryCard = ({ countryInfo, today }) => {
+    const initialDate = today.minus({ week: 1 }).toISODate();
+    const endDate = today.toISODate();
+
+    const [amountSEK, setAmountSEK] = useState('1');
     const [currency, setCurrency] = useState();
+    const [error, setError] = useState();
     const [startDate, setStart] = useState({
-        date: initialDate.current,
+        date: initialDate,
         type: '1week',
     });
-    const country = useRef(countryInfo);
-    const currInLS = useRef(true);
-
-    useEffect(() => {
-        // Update useRef and reset AmunotSEK and Currency
-
-        if (country.current !== countryInfo) {
-            country.current = countryInfo;
-            setError();
-            setAmountSEK();
-            setCurrency();
-        }
-        // Get currency rate from local storage and set AmountSEK to 1
-        // to visualize the current rate for 1 SEK
-        try {
-            getLS(country.current.currencies[0].code, setCurrency);
-            currInLS.current = true;
-            setAmountSEK('1');
-        } catch (err) {
-            currInLS.current = false;
-            setAmountSEK();
-        }
-    }, [countryInfo]);
 
     // UseEffect to fetch exchange rate when user has
     // searched for a country and types a value in SEK field
     useEffect(() => {
-        const fetchRate = async (amount, targetCurr) => {
-            try {
-                const response = await fetch(
-                    'https://api.exchangerate.host/convert?from=SEK&to=' +
-                        targetCurr +
-                        '&amount=' +
-                        amount
-                );
-                if (response.ok) {
-                    const newCurrency = await response.json();
-                    setCurrency(newCurrency.result);
-                } else {
-                    setCurrency();
-                    throw Error(
-                        `Request rejected with status ${response.status}`
-                    );
-                }
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-
-        if (amountSEK && country.current && !currInLS.current) {
-            fetchRate(amountSEK, country.current.currencies[0].code);
+        if (amountSEK) {
+            setError(null);
+            fetchRate(amountSEK, countryInfo.currencies[0].code).then(
+                (currency) => setCurrency(currency),
+                (error) => setError(error.message)
+            );
         }
-        // Set currInLS to false after first render so that
-        // fetches for different SEK rates can work
-        // currInLS.current = false;
-    }, [amountSEK, setError]);
-
-    // After fetching currency, calculate the rate for 1 SEK and add to local storage
-    useEffect(() => {
-        let rate = undefined;
-        const getRate = () => {
-            rate = currency / amountSEK;
-            rate = rate.toFixed(3);
+        return () => {
+            setAmountSEK('1');
         };
-
-        if (currency === undefined || currency === null) {
-            return;
-        }
-
-        getRate();
-        setLS(country.current.currencies[0].code, rate);
-    }, [currency, amountSEK]);
+    }, [amountSEK, countryInfo]);
 
     const rateInterval = (interval, amount) => {
         if (interval === 'month') {
@@ -144,7 +116,7 @@ const CountryCard = ({ countryInfo, today }) => {
                             <p>=</p>
                         </div>
                         {error ? (
-                            <p> {error} Could not fetch currency rate</p>
+                            <p> Could not fetch currency rate</p>
                         ) : currency && amountSEK !== '' ? (
                             <p>
                                 {currency} {countryInfo.currencies[0].code}
@@ -157,7 +129,7 @@ const CountryCard = ({ countryInfo, today }) => {
                 <CurrencyGraph
                     currency={countryInfo.currencies[0].code}
                     startDate={startDate}
-                    endDate={endDate.current}
+                    endDate={endDate}
                 />
                 <div className="tab">
                     <button onClick={() => rateInterval('week', 1)}>

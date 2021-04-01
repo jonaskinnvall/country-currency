@@ -28,11 +28,9 @@ export default function App() {
     const [error, setError] = useState();
     const today = DateTime.now();
 
-    // localStorage.setItem('date', JSON.stringify('2021-03-20'));
+    // localStorage.setItem('date', JSON.stringify('2021-02-20'));
 
-    const cache = JSON.parse(localStorage.getItem('date'));
-
-    if (today.toISODate() !== cache) {
+    if (today.toISODate() !== JSON.parse(localStorage.getItem('date'))) {
         localStorage.clear();
         localStorage.setItem('date', JSON.stringify(today.toISODate()));
     }
@@ -44,7 +42,6 @@ export default function App() {
             fetchCountry(search).then(
                 (country) => setCountry(country[0]),
                 (error) => {
-                    console.log('error', error.message);
                     setError(error.message);
                 }
             );
