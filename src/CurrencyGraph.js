@@ -112,7 +112,6 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
                         </defs>
                         <XAxis
                             dataKey="date"
-                            angle="15"
                             tickMargin={15}
                             interval={'preserveStart'}
                         />
