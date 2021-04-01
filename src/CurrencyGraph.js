@@ -146,7 +146,7 @@ const CurrencyGraph = ({ currency, startDate, endDate }) => {
                     </AreaChart>
                 </ResponsiveContainer>
             ) : (
-                <div></div>
+                <div className="graph-placeholder"></div>
             )}
         </>
     );
