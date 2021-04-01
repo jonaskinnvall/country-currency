@@ -99,3 +99,8 @@ h1 {
 svg text {
     fill: hsl(45, 42%, 93%);
 }
+
+.graph-placeholder {
+    width: 80%;
+    height: 145px;
+}
