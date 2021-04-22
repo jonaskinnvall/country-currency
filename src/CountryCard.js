@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 
 import InputField from './InputField';
@@ -35,7 +35,7 @@ const fetchRate = async (query, targetCurr) => {
     throw Error(`Request rejected with status ${response.status}`);
 };
 
-const CountryCard = ({ countryInfo, today }) => {
+const CountryCard = forwardRef(({ countryInfo, today }, ref) => {
     const initialDate = today.minus({ week: 1 }).toISODate();
     const endDate = today.toISODate();
 
@@ -109,7 +109,7 @@ const CountryCard = ({ countryInfo, today }) => {
                                 inputType={'SEK'}
                                 inputValue={amountSEK}
                                 setInput={setAmountSEK}
-                                country={countryInfo}
+                                ref={ref}
                             />
                         </div>
                         <div>
@@ -145,9 +145,11 @@ const CountryCard = ({ countryInfo, today }) => {
             </div>
         </>
     );
-};
+});
 
 export default CountryCard;
+
+CountryCard.displayName = 'CountryCard';
 
 CountryCard.propTypes = {
     countryInfo: PropTypes.object,

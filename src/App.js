@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DateTime } from 'luxon';
 
 import './styles.css';
@@ -27,6 +27,7 @@ export default function App() {
     const [search, setSearch] = useState();
     const [error, setError] = useState();
     const today = DateTime.now();
+    const inputRef = useRef('');
 
     // localStorage.setItem('date', JSON.stringify('2021-02-20'));
 
@@ -40,7 +41,12 @@ export default function App() {
         if (search) {
             setError(null);
             fetchCountry(search).then(
-                (country) => setCountry(country[0]),
+                (country) => {
+                    setCountry(country[0]);
+                    if (inputRef.current !== '') {
+                        inputRef.current.value = '';
+                    }
+                },
                 (error) => {
                     setError(error.message);
                 }
@@ -73,7 +79,11 @@ export default function App() {
                 </div>
             ) : (
                 <div className="App">
-                    <CountryCard countryInfo={country} today={today} />
+                    <CountryCard
+                        countryInfo={country}
+                        today={today}
+                        ref={inputRef}
+                    />
                 </div>
             )}
         </>
