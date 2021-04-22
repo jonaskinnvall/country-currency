@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     ResponsiveContainer,
@@ -9,85 +9,61 @@ import {
     Tooltip,
 } from 'recharts';
 
-import { getLS, setLS } from './useLS';
+const fixRates = (fetchedRates, currency) => {
+    let rates = [];
+    for (const date in fetchedRates) {
+        if (Object.hasOwnProperty.call(fetchedRates, date)) {
+            const dateNRate = {
+                date: date.replace(/^20/, ''),
+                rate: fetchedRates[date][currency],
+            };
+            rates.push(dateNRate);
+        }
+    }
+    return rates;
+};
+
+const fetchRates = async (currency, startDate, endDate, key) => {
+    const cache = localStorage.getItem(key);
+    if (cache) {
+        return JSON.parse(cache);
+    }
+
+    const response = await fetch(
+        `https://api.exchangerate.host/timeseries?start_date=${startDate.date}&end_date=${endDate}&base=SEK&symbols=${currency}`
+    );
+    if (response.ok) {
+        const rateData = await response.json();
+        const fixedRates = fixRates(rateData.rates, currency);
+        localStorage.setItem(key, JSON.stringify(fixedRates));
+        return fixedRates;
+    }
+
+    throw Error(`Request rejected with status ${response.status}`);
+};
 
 const CurrencyGraph = ({ currency, startDate, endDate }) => {
-    const [RateHistory, setRateHistory] = useState();
-    const [Rates, setRates] = useState([]);
+    const [rates, setRates] = useState([]);
     const [error, setError] = useState();
-    const currencyRef = useRef(currency);
-    const currencyKey = useRef(currency + startDate.type);
 
     useEffect(() => {
-        if (currencyRef.current !== currency) {
-            currencyRef.current = currency;
-            currencyKey.current = currency + startDate.type;
-            setError();
-            setRates([]);
-        }
-        if (currencyKey.current !== startDate.type) {
-            currencyKey.current = currency + startDate.type;
-            setRates([]);
-        }
-    }, [currency, startDate]);
-
-    useEffect(() => {
-        const fetchRateHistory = async () => {
-            try {
-                const response = await fetch(
-                    `https://api.exchangerate.host/timeseries?start_date=${startDate.date}&end_date=${endDate}&base=SEK&symbols=${currency}`
-                );
-                if (response.ok) {
-                    const rateData = await response.json();
-                    setRateHistory(rateData);
-                } else {
-                    setRateHistory();
-                    throw Error(
-                        `Request rejected with status ${response.status}`
-                    );
-                }
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-        try {
-            getLS(currencyKey.current, setRates);
-        } catch (err) {
-            fetchRateHistory();
-        }
+        setError(null);
+        setRates([]);
+        const currencyKey = currency + startDate.type;
+        fetchRates(currency, startDate, endDate, currencyKey).then(
+            (rates) => setRates(rates),
+            (error) => setError(error)
+        );
     }, [currency, startDate, endDate]);
-
-    useEffect(() => {
-        if (RateHistory) {
-            for (const date in RateHistory.rates) {
-                if (Object.hasOwnProperty.call(RateHistory.rates, date)) {
-                    const dateNRate = {
-                        date: date,
-                        rate: RateHistory.rates[date][currencyRef.current],
-                    };
-                    setRates((Rates) => [...Rates, dateNRate]);
-                }
-            }
-        }
-    }, [RateHistory]);
-
-    useEffect(() => {
-        if (
-            RateHistory &&
-            Rates.length === Object.keys(RateHistory.rates).length
-        ) {
-            setLS(currencyKey.current, Rates);
-        }
-    }, [Rates, RateHistory]);
 
     return (
         <>
             {error ? (
                 <p>{error} Could note fetch graph data. </p>
-            ) : currency && Rates.length !== 0 ? (
+            ) : currency && rates.length !== 0 ? (
                 <ResponsiveContainer width="80%" height={145}>
                     <AreaChart
-                        data={Rates}
+                        data={rates}
                         margin={{ top: 10, right: 42, left: 0, bottom: 17 }}
                     >
                         <defs>

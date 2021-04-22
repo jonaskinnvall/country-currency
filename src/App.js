@@ -1,60 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { DateTime } from 'luxon';
 
 import './styles.css';
 import CountryCard from './CountryCard';
 import InputField from './InputField';
 
-import { setLS, getLS } from './useLS';
+async function fetchCountry(query) {
+    const cache = localStorage.getItem(query);
+    if (cache) {
+        return JSON.parse(cache);
+    }
+
+    const response = await fetch(
+        'https://restcountries.eu/rest/v2/name/' + query + '?fullText=true'
+    );
+    if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem(query, JSON.stringify(data));
+        return data;
+    }
+    throw Error(`Request rejected with status ${response.status}`);
+}
 
 export default function App() {
-    const [Countries, setCountries] = useState();
-    const [Search, setSearch] = useState();
+    const [country, setCountry] = useState();
+    const [search, setSearch] = useState();
     const [error, setError] = useState();
-    const searchString = useRef('');
-    // window.localStorage.clear();
+    const today = DateTime.now();
+    const inputRef = useRef('');
+
+    // localStorage.setItem('date', JSON.stringify('2021-02-20'));
+
+    if (today.toISODate() !== JSON.parse(localStorage.getItem('date'))) {
+        localStorage.clear();
+        localStorage.setItem('date', JSON.stringify(today.toISODate()));
+    }
 
     // UseEffect to fetch country when user types in search field
     useEffect(() => {
-        const fetchCountry = async () => {
-            try {
-                const response = await fetch(
-                    'https://restcountries.eu/rest/v2/name/' +
-                        Search +
-                        '?fullText=true'
-                );
-                if (response.ok) {
-                    const newCountry = await response.json();
-                    setCountries(newCountry[0]);
-                } else {
-                    setCountries();
-                    throw Error(
-                        `Request rejected with status ${response.status}`
-                    );
+        if (search) {
+            setError(null);
+            fetchCountry(search).then(
+                (country) => {
+                    setCountry(country[0]);
+                    if (inputRef.current !== '') {
+                        inputRef.current.value = '';
+                    }
+                },
+                (error) => {
+                    setError(error.message);
                 }
-            } catch (err) {
-                setError(err.message);
-            }
-        };
-
-        if (searchString.current !== Search) {
-            searchString.current = Search;
-            setError();
+            );
         }
-        if (Search) {
-            try {
-                getLS(Search, setCountries);
-            } catch (err) {
-                fetchCountry();
-            }
-        }
-    }, [Search]);
-
-    // UseEffect to add country to local storage on change
-    useEffect(() => {
-        if (typeof Countries !== 'undefined') {
-            setLS(searchString.current, Countries);
-        }
-    }, [Countries]);
+    }, [search]);
 
     return (
         <>
@@ -62,7 +60,7 @@ export default function App() {
                 <h1>Country Currency</h1>
                 <InputField
                     inputType={'Search'}
-                    inputValue={Search}
+                    inputValue={search}
                     setInput={setSearch}
                 />
             </div>
@@ -75,13 +73,17 @@ export default function App() {
                         another.
                     </h2>
                 </div>
-            ) : !Countries ? (
+            ) : !country ? (
                 <div className="App">
                     <h2>Search for a country to learn more about it!</h2>
                 </div>
             ) : (
                 <div className="App">
-                    <CountryCard countryInfo={Countries} />
+                    <CountryCard
+                        countryInfo={country}
+                        today={today}
+                        ref={inputRef}
+                    />
                 </div>
             )}
         </>
