@@ -12,7 +12,7 @@ async function fetchCountry(query) {
     }
 
     const response = await fetch(
-        'https://restcountries.eu/rest/v2/name/' + query + '?fullText=true'
+        'https://restcountries.com/v2/name/' + query + '?fullText=true'
     );
     if (response.ok) {
         const data = await response.json();
@@ -28,8 +28,6 @@ export default function App() {
     const [error, setError] = useState();
     const today = DateTime.now();
     const inputRef = useRef('');
-
-    // localStorage.setItem('date', JSON.stringify('2021-02-20'));
 
     if (today.toISODate() !== JSON.parse(localStorage.getItem('date'))) {
         localStorage.clear();
