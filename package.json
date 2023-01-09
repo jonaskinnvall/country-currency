@@ -5,7 +5,7 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
-    "luxon": "^1.26.0",
+    "luxon": "^1.28.1",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-scripts": "^5.0.1",
